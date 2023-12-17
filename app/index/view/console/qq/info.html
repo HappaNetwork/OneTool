@@ -1,0 +1,1048 @@
+{extend name="common/layout"/}
+{block name="head"} {include file="console/head" /}{/block}
+{block name="main"}
+{php}
+$a_data = unserialize($data['data']); // 反序列化账号数据
+$task = new \app\index\model\Tasks();
+$jobs = new \app\index\model\Jobs();
+if($a_data['nickname'] != null){
+$nickname = $a_data['nickname'];
+}else{
+$nickname = $a_data['uin'];
+}
+{/php}
+<style>
+    td {
+        white-space:nowrap;
+    }
+</style>
+<div class="row">
+    <div class="col-xl-4">
+        <div class="block block-rounded">
+            <div class="block-content">
+                <a class="btn btn-lg btn-alt-primary w-100 mb-1" href="/index/console/qq/add">更新账号</a>
+                <p class="text-center fw-semibold fs-xs text-muted">若账号失效请及时更新</p>
+            </div>
+        </div>
+        <div class="block block-rounded block-link-shadow text-center" href="javascript:void(0)">
+            <div class="block-header block-header-default">
+                <h3 class="block-title">
+                    <i class="fa fa-fw fa-graduation-cap opacity-50"></i>
+                    基本信息
+                </h3>
+            </div>
+            <div class="block-content block-content-full">
+                <div class="push">
+                    <img alt="" class="img-avatar" src="//q2.qlogo.cn/g?b=qq&nk={$a_data.uin}&s=140">
+                </div>
+                <div class="fw-semibold mb-1">{$nickname} ·
+                    {if condition="$data.state eq 1"}
+                    <span class="text-success">运行中</span>
+                    {else}
+                    <span class="text-danger">已失效</span>
+                    {/if}
+                </div>
+                <button type="button" class="btn btn-sm btn-alt-primary me-1 mt-2" onclick="ajax_reexecute_task('{$a_data[\'uin\']}')">
+                    <i class="si si-energy"></i>申请补挂
+                </button>
+            </div>
+        </div>
+        {if condition="$dg_uin"}
+        <div class="block block-rounded" id="dg-info" style="display: none;">
+            <div class="block-header block-header-default text-center">
+                <h3 class="block-title">
+                    <i class="fa fa-fw fa-info opacity-50"></i>
+                    等级代练信息
+                </h3>
+            </div>
+            <div class="block-content">
+                <table class="table table-borderless table-striped">
+                    <tbody>
+                    <tr>
+                        <td>
+                            <span class="me-1">
+                                <i class="fa fa-fw si si-star opacity-50"></i>
+                                <span class="fs-sm">账号等级: {$dg_uin['level']}</span>
+                            </span>
+                            <span>
+                                <span class="fs-sm">今日加速: {$dg_uin['today_day']}</span>
+                            </span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <span class="me-1">
+                                <i class="fa fa-fw si si-star opacity-50"></i>
+                                <span class="fs-sm">挂机地区: <span class="server"></span> <a href="javascript:ajax_change_server({$a_data['uin']})">修改</a></span>
+                            </span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <span>
+                                <i class="fa fa-fw si si-star opacity-50"></i>
+                                {php}
+                                    function mintotime($time)
+                                    {
+                                        $h=intval($time/60);
+                                        if ($h < 10) {
+                                            $h = '0' . $h;
+                                        }
+                                        $min=$time%60;
+                                        return $h.":".$min;
+                                    }
+                                {/php}
+                                <span class="fs-sm">挂机时间: {:mintotime($dg_uin['timing'])} <a href="javascript:ajax_change_timing({$a_data['uin']}, '{:mintotime($dg_uin['timing'])}')">修改</a></span>
+                            </span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <i class="fa fa-fw fa-sun opacity-50"></i>
+                            <span class="fs-sm">帐号状态: {$dg_uin['uin_status'] == 0 ? '<span class="text-success">正常</span>' : '<span class="text-danger">异常</span> <small class="fs-xs fw-semibold text-warning">请点击下方更新挂机</small>'}</span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <i class="fa fa-fw fa-sun opacity-50"></i>
+                            <span class="fs-sm">功能状态: {$dg_uin['status'] == 0 ? '<span class="text-success">正常</span>' : '<span class="text-warning">暂停</span>'}</span>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+                <div class="row g-sm mb-3">
+                    <div class="col-8">
+                        <a class="btn btn-sm btn-primary w-100" href="javascript:ajax_login_dg({$a_data['uin']})">
+                            更新挂机
+                        </a>
+                    </div>
+                    <div class="col-4">
+                        <div class="btn-group w-100" role="group">
+                            <button type="button" class="btn btn-sm btn-alt-primary dropdown-toggle" id="btnGroupVerticalDrop1" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                更多
+                            </button>
+                            <div class="dropdown-menu" aria-labelledby="btnGroupVerticalDrop1" style="position: absolute; inset: 0px auto auto 0px; margin: 0px; transform: translate(0px, 40px);" data-popper-placement="bottom-start">
+                                <a class="dropdown-item" href="javascript:ajax_renew_dg({$a_data['uin']});">
+                                    <i class="fa fa-fw fa-calendar-check opacity-50 me-1"></i>续费挂机
+                                </a>
+                                <a class="dropdown-item" href="javascript:ajax_change_status({$a_data['uin']}, {$dg_uin['status']})">
+                                    <i class="fa fa-fw fa-fighter-jet opacity-50 me-1"></i>{$dg_uin['status'] == 0 ? '暂停' : '恢复'}挂机
+                                </a>
+                                <div class="dropdown-divider"></div>
+                                <a class="dropdown-item" href="javascript:ajax_dg_run({$a_data['uin']})">
+                                    <i class="fa fa-fw fa-lightbulb opacity-50 me-1"></i>执行挂机
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {/if}
+    </div>
+    <div class="col-xl-8">
+        <div class="block block-rounded overflow-hidden">
+            <ul class="nav nav-tabs nav-tabs-block nav-justified" role="tablist">
+                <li class="nav-item">
+                    <button type="button" class="nav-link active" id="general-tab" data-bs-toggle="tab" data-bs-target="#general" role="tab" aria-controls="general" aria-selected="false" onclick="$('#dg-info').hide()">
+                        常规功能
+                    </button>
+                </li>
+                {if config('sys.is_qqdg') == 1}
+                <li class="nav-item">
+                    <button type="button" class="nav-link" id="dg-tab" data-bs-toggle="tab" data-bs-target="#dg" role="tab" aria-controls="dg" aria-selected="true" onclick="$('#dg-info').show()">
+                        等级代练
+                    </button>
+                </li>
+                {/if}
+            </ul>
+            <div class="block-content tab-content">
+                <div class="tab-pane active" id="general" role="tabpanel" aria-labelledby="general-tab">
+                    <div class="table-responsive">
+                        <table class="table table-vcenter">
+                            <tbody>
+                            {foreach $task->getTaskList('qq') as $k => $v}
+                            {php}
+                            $job = $jobs->getJobInfo('qq', $a_data['uin'], $v['execute_name']);
+                            {/php}
+                            <tr>
+                                <td class="text-center">
+                                    <i class="fw-semibold fa fa-2x {$v.icon}"></i>
+                                </td>
+                                <td class="fw-semibold">
+                                    <p class="fw-semibold mb-1">{$v.name}
+                                        {if condition="$v.more"}
+                                        {php}
+                                        if ($job['data']) { $config = json_encode(unserialize($job['data'])); } else { $config = '[]'; }
+                                        {/php}
+                                        <button type="button" class="btn btn-sm btn-outline-primary py-0 px-1 mx-1" data-config='{$config}' onclick="updateConfig('{$v.execute_name}', '{$v.name}', this)"><i class="si si-settings"></i></button>
+                                        {/if}
+                                    </p>
+                                    <p class="fs-xs text-muted mb-0">
+                                        {$v.describe}
+                                    </p>
+                                </td>
+                                <td class="d-none d-sm-table-cell"><i class="far fa-clock opacity-75"></i> {:date("m-d H:i",strtotime($job.lastExecute))}
+                                </td>
+                                <td class="text-center">
+                                    <div class="btn-group">
+                                        <div class="form-check form-switch">
+                                            {if condition="$job.state eq 1"}
+                                            <input type="checkbox" class="form-check-input" onclick="ajax_set_zt('{$v.execute_name}', '{:$data.user_id}');" checked>
+                                            {else /}
+                                            <input type="checkbox" class="form-check-input" onclick="ajax_set_zt('{$v.execute_name}', '{:$data.user_id}');">
+                                            {/if}
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                            {/foreach}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                {if config('sys.is_qqdg') == 1}
+                <div class="tab-pane" id="dg" role="tabpanel" aria-labelledby="dg-tab">
+                    <div class="table-responsive overflow-hidden">
+                        <table class="table table-vcenter">
+                            <tbody>
+                            {volist name="speed" id="v" empty="$empty"}
+                            <tr>
+                                <td class="text-center">
+                                    <!--Web端可见-->
+                                    <img class="d-none d-sm-table-cell" style="width: 2em; height: 2em;" src="{$v.logo}">
+                                    <!--移动端可见-->
+                                    <img class="d-sm-none" style="width: 2em; height: 2em;" src="{$v.logo}" onclick="layer.msg('{$v.describe}')">
+                                </td>
+                                <td class="fw-semibold">
+                                    <p class="fw-semibold mb-1">{$v.name}</p>
+                                    <!--Web端可见-->
+                                    <p class="fs-xs text-muted mb-0 d-none d-sm-table-cell">
+                                        <i class="si si-info opacity-75"></i> {$v.describe}
+                                    </p>
+                                    <!--移动端可见-->
+                                    <p class="fs-xs text-muted mb-0 d-sm-none">
+                                        <i class="si si-clock opacity-75"></i> 剩余 {$dg_uin.player_day} 天
+                                    </p>
+                                </td>
+                                <td class="d-none d-sm-table-cell">
+                                    {if $dg_uin.player_day >= 0}
+                                    <span class="ant-tag ant-tag-success">剩余: {$dg_uin.player_day}天</span>
+                                    {else /}
+                                    <span class="ant-tag ant-tag-red">天数不足</span>
+                                    {/if}
+                                </td>
+                                <td class="text-center">
+                                    <div class="btn-group">
+                                        <div class="form-check form-switch">
+                                            <input type="checkbox" class="form-check-input" onclick="ajax_change_setting({$a_data['uin']}, '{$v['id']}', {$v['status']})" {if condition="$v.status eq 1"}checked{/if}>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                            {/volist}
+                            {volist name="sign" id="v" empty="$dg"}
+                            <tr>
+                                <td class="text-center">
+                                    <!--Web端可见-->
+                                    <img class="d-none d-sm-table-cell" style="width: 2em; height: 2em;" src="{$v.logo}">
+                                    <!--移动端可见-->
+                                    <img class="d-sm-none" style="width: 2em; height: 2em;" src="{$v.logo}" onclick="layer.msg('{$v.describe}')">
+                                </td>
+                                <td class="fw-semibold">
+                                    <p class="fw-semibold mb-1">{$v.name}</p>
+                                    <!--Web端可见-->
+                                    <p class="fs-xs text-muted mb-0 d-none d-sm-table-cell">
+                                        <i class="si si-info opacity-75"></i> {$v.describe}
+                                    </p>
+                                    <!--移动端可见-->
+                                    <p class="fs-xs text-muted mb-0 d-sm-none">
+                                        <i class="si si-clock opacity-75"></i> 剩余 {$dg_uin.sign_day} 天
+                                    </p>
+                                </td>
+                                <td class="d-none d-sm-table-cell">
+                                    {if $dg_uin.sign_day >= 0}
+                                    <span class="ant-tag ant-tag-success">剩余: {$dg_uin.sign_day}天</span>
+                                    {else /}
+                                    <span class="ant-tag ant-tag-red">天数不足</span>
+                                    {/if}
+                                </td>
+                                <td class="text-center">
+                                    <div class="btn-group">
+                                        <div class="form-check form-switch">
+                                            <input type="checkbox" class="form-check-input" onclick="ajax_change_setting({$a_data['uin']}, '{$v['id']}', {$v['status']})" {if condition="$v.status eq 1"}checked{/if}>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                            {/volist}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                {/if}
+            </div>
+        </div>
+    </div>
+</div>
+<div class="row">
+    <div class="col-xl-12">
+        <div class="block block-rounded">
+            <div class="block-header">
+                <h3 class="block-title">任务运行日志 <small>仅展示最新的50条数据</small></h3>
+            </div>
+            <div class="block-content block-content-full">
+                <table class="table table-bordered table-striped table-vcenter js-dataTable-responsive" id="task-logs-list" data-type="qq" data-user_id="{$data.user_id}">
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{if config('sys.is_qqdg') == 1}
+<div class="content-content p-2" id="payment-selector" style="display: none">
+    <div class="text-center fw-semibold fs-sm">请选择支付方式</div>
+    <div class="btn-group btn-group-sm my-2" role="group">
+        {if condition="config('sys.is_qqpay')"}
+        <input type="radio" class="btn-check" name="qqpay" id="qqpay" onclick="ajax_shop_dg('qqpay');">
+        <label class="btn btn-alt-info" for="qqpay">QQ支付</label>
+        {/if}
+        {if condition="config('sys.is_wxpay')"}
+        <input type="radio" class="btn-check" name="wxpay" id="wxpay" onclick="ajax_shop_dg('wxpay');">
+        <label class="btn btn-alt-info" for="wxpay">微信支付</label>
+        {/if}
+        {if condition="config('sys.is_alipay')"}
+        <input type="radio" class="btn-check" name="alipay" id="alipay" onclick="ajax_shop_dg('alipay');">
+        <label class="btn btn-alt-info" for="alipay">支付宝支付</label>
+        {/if}
+    </div>
+    <input type="hidden" id="shopid">
+</div>
+{/if}
+{/block}
+{block name="foot"}
+<script src="/static/js/plugins/datatables/jquery.dataTables.min.js"></script>
+<script src="/static/js/plugins/datatables-bs5/js/dataTables.bootstrap5.min.js"></script>
+
+<script src="/static/js/plugins/datatables-responsive/js/dataTables.responsive.min.js"></script>
+<script src="/static/js/plugins/datatables-responsive-bs5/js/responsive.bootstrap5.min.js"></script>
+<script src="/static/js/task_logs_datatables.js"></script>
+<script src="/static/js/plugins/select2/js/select2.full.min.js"></script>
+<script>
+    function updateConfig(execute_name, name, _this) {
+        if (typeof ($(_this).data("config")) == 'object') {
+            var config = JSON.stringify($(_this).data("config"));
+        } else {
+            var config = '{}';
+        }
+        console.log(config);
+        switch (execute_name) {
+            case 'like':
+                likeTask(execute_name, name, config);
+                break;
+            case 'shuo':
+                shuoTask(execute_name, name, config);
+                break;
+            case 'reply':
+                replyTask(execute_name, name, config);
+                break;
+            default:
+                layer.alert("请勿非法操作");
+                return false;
+        }
+    }
+
+    function likeTask(execute_name, name, config)
+    {
+        layer.open({
+            title: name + "配置",
+            btn: ['保存', '取消'],
+            btnAlign: 'c',
+            closeBtn: 0,
+            shadeClose: true,
+            content: '<form><div class="row"><div class="col-md-12"><div class="form-floating"><input type="text"class="form-control"id="zan_forbid"name="zan_forbid"placeholder="多个QQ号之间请使用小数点隔开"><label class="form-label"for="zan_forbid">不赞Ta</label><div class="form-text text-muted">填写的QQ将不会点赞他的说说</div></div></div></div></form>',
+            success: function (res, index) {
+                config = JSON.parse(config);
+                // console.log(config)
+                if (typeof (config['zan_forbid']) !== 'undefined') {
+                    $("#zan_forbid").val(config['zan_forbid']);
+                }
+            },
+            yes: function (index, dom) {
+                layer.close(index);
+                var loading = layer.load(2);
+                const params = JSON.stringify($(dom).find("form").parseForm());
+                x.ajax('/index/ajax/qq/set', {do: execute_name, user_id: {$a_data['uin']}, config: params}, function (data) {
+                    if (data.code == 1) {
+                        x.close(loading);
+                        x.notify(data.message, 'success');
+                        setTimeout(function () {
+                            window.location.href = '/index/console/qq/info/{$a_data["uin"]}';
+                        }, 1000)
+                    } else {
+                        x.close(loading);
+                        x.notify(data.message, 'warning');
+                    }
+                })
+            },
+        });
+    }
+
+    function replyTask(execute_name, name, config)
+    {
+        layer.open({
+            title: name + "配置",
+            btn: ['保存', '取消'],
+            btnAlign: 'c',
+            closeBtn: 0,
+            shadeClose: true,
+            content: '<form><div class="row"style="text-align: left;"><div class="col-md-12"><div class="mb-4"><label class="form-label"for="reply_content">评论内容</label><textarea class="form-control form-control-lg"id="reply_content"name="reply_content"rows="4"placeholder="输入评论的内容"></textarea><div class="form-text text-muted">支持<code>[彩虹屁]</code>标签</div></div></div></div><div class="row"style="text-align: left;"><div class="col-md-12"><div class="form-floating"><input class="form-control"id="reply_forbid"name="reply_forbid"placeholder="多个QQ号之间请使用小数点隔开"type="text"><label class="form-label"for="reply_forbid">不评论Ta</label><div class="form-text text-muted">填写的QQ号码将不会评论他的说说，多个QQ号之间请使用小数点隔开</div></div></div></div></form>',
+            success: function (res, index) {
+                config = JSON.parse(config);
+                // console.log(config)
+                if (typeof (config['reply_content']) !== 'undefined') {
+                    $("#reply_content").val(config['reply_content']);
+                }
+                if (typeof (config['reply_forbid']) !== 'undefined') {
+                    $("#reply_forbid").val(config['reply_forbid']);
+                }
+            },
+            yes: function (index, dom) {
+                layer.close(index);
+                var loading = layer.load(2);
+                const params = JSON.stringify($(dom).find("form").parseForm());
+                x.ajax('/index/ajax/qq/set', {do: execute_name, user_id: {$a_data['uin']}, config: params}, function (data) {
+                    if (data.code == 1) {
+                        x.close(loading);
+                        x.notify(data.message, 'success');
+                        setTimeout(function () {
+                            window.location.href = '/index/console/qq/info/{$a_data["uin"]}';
+                        }, 1000)
+                    } else {
+                        x.close(loading);
+                        x.notify(data.message, 'warning');
+                    }
+                })
+            },
+        });
+    }
+
+    function shuoTask(execute_name, name, config)
+    {
+        layer.open({
+            title: name + "配置",
+            btn: ['保存', '取消'],
+            btnAlign: 'c',
+            closeBtn: 0,
+            shadeClose: true,
+            content: '<form><div class="row"style="text-align: left;"><div class="col-md-12"><div class="mb-4"><label class="form-label"for="shuo_content">说说内容</label><textarea class="form-control form-control-lg"id="shuo_content"name="shuo_content"rows="4"placeholder="输入说说的内容"></textarea><div class="form-text text-muted">支持<code>[网易云热评]、[舔狗日记]</code>标签</div></div></div></div><div class="row"style="text-align: left;"><div class="col-md-12"><div class="form-floating mb-4"><select class="form-select"id="shuo_delete"name="shuo_delete"aria-label="delete"><option selected="0">否</option><option selected="1">是</option></select><label class="form-label"for="shuo_delete">同时删除上一条说说</label></div></div></div></form>',
+            success: function (res, index) {
+                config = JSON.parse(config);
+                // console.log(config)
+                if (typeof (config['shuo_content']) !== 'undefined') {
+                    $("#shuo_content").val(config['shuo_content']);
+                }
+                if (typeof (config['shuo_delete']) !== 'undefined') {
+                    $("#shuo_delete").val(config['shuo_delete']);
+                }
+            },
+            yes: function (index, dom) {
+                layer.close(index);
+                var loading = layer.load(2);
+                const params = JSON.stringify($(dom).find("form").parseForm());
+                x.ajax('/index/ajax/qq/set', {do: execute_name, user_id: {$a_data['uin']}, config: params}, function (data) {
+                    if (data.code == 1) {
+                        x.close(loading);
+                        x.notify(data.message, 'success');
+                        setTimeout(function () {
+                            window.location.href = '/index/console/qq/info/{$a_data["uin"]}';
+                        }, 1000)
+                    } else {
+                        x.close(loading);
+                        x.notify(data.message, 'warning');
+                    }
+                })
+            },
+        });
+    }
+
+    function ajax_set_zt(execute_name, user_id)
+    {
+        x.ajax('/index/ajax/qq/set','act=zt&do=' + execute_name + '&user_id=' + user_id, function (data) {
+            if (data.code == 1) {
+                x.notify(data.message, 'success');
+            } else if (data.code == -1) {
+                x.notify(data.message, 'danger');
+                setTimeout(function () {
+                    // x.pjax('/index/console/qq/info/{$data["user_id"]}');
+                    window.location.href = '/index/console/qq/info/{$data["user_id"]}';
+                },1500)
+            } else {
+                x.notify(data.message, 'warning');
+            }
+        });
+    }
+
+    function ajax_reexecute_task(user_id)
+    {
+        layer.confirm('你确定申请补挂吗?', {
+            btn: ['确定', '取消'],
+            closeBtn: 0,
+        }, function () {
+            x.ajax("/index/ajax/qq/reExecute", {user_id: user_id}, function (data) {
+                if (data.code === 1) {
+                    x.btn(data.message);
+                } else {
+                    x.notify(data.message);
+                }
+            });
+        });
+    }
+
+    {if config('sys.is_qqdg') == 1}
+    function ajax_buy_dg(uin) {
+        layer.open({
+            title: uin + " - 开通等级代练",
+            btn: ['确认', '取消'],
+            btnAlign: 'c',
+            closeBtn: 0,
+            shadeClose: true,
+            content: '<form id="buy-dg"><div class="row"style="text-align: left;"><div class="col-md-12"><div class="mb-4"><div class="form-floating"><input type="text"class="form-control"id="dg-uin"name="uin"placeholder="uin"><label class="form-label"for="dg-uin">挂机账号</label></div></div></div></div><div class="row"style="text-align: left;"><div class="col-md-12"><div class="mb-4"><div class="form-floating"><input type="text"class="form-control"id="dg-pwd"name="pwd"placeholder="pwd"><label class="form-label"for="dg-pwd">挂机密码</label></div></div></div></div><div class="row"style="text-align: left;"><div class="col-md-12"><div class="form-floating mb-4"><select class="form-select"id="dg-servers"name="server_key"aria-label="servers"></select><label class="form-label"for="dg-servers">挂机地区</label></div></div></div><div class="row"style="text-align: left;"><div class="col-md-12"><div class="form-floating mb-4"><select class="form-select"id="dg-type"name="type"aria-label="type"onchange="ajax_get_dg_price()"><option value="0">全套</option><option value="1">加速</option><option value="2">拓展</option></select><label class="form-label"for="dg-type">套装类型</label></div></div></div><div class="row"style="text-align: left;"><div class="col-md-12"><div class="form-floating"><select class="form-select"id="dg-month"name="month"aria-label="type"onchange="ajax_get_dg_price()"><option value="1">月度(1个月)</option><option value="3">季度(3个月)</option><option value="6">半年度(6个月)</option><option value="12">年度(12个月)</option><option value="999">永久</option></select><label class="form-label"for="dg-type">开通时长</label></div></div></div><div class="form-text text-muted">开通价格：<span class="text-danger price">0.00</span>元</div></form>',
+            success: function (res, index) {
+                ajax_get_dg_price();
+                $('#dg-uin').val(uin);
+                x.ajax('/index/dg/getServers', null, function (ret) {
+                    if (ret.code == 1) {
+                        for (i in ret.data) {
+                            $('#dg-servers').append("<option value=" + i + ">" + ret.data[i] + "</option>")
+                        }
+                    } else {
+                        x.notify(ret.message, 'warning');
+                    }
+                })
+            },
+            yes: function (index, dom) {
+                if (!x.getval('#dg-pwd', '请先输入挂机密码')){
+                    return;
+                }
+                select_payment();
+            },
+        });
+    }
+
+    function ajax_renew_dg(uin) {
+        layer.open({
+            title: uin + " - 续费等级代练",
+            btn: ['确认', '取消'],
+            btnAlign: 'c',
+            closeBtn: 0,
+            shadeClose: true,
+            content: '<form id="buy-dg"><input type="hidden"id="dg-uin" name="uin"><div class="row"style="text-align: left;"><div class="col-md-12"><div class="form-floating mb-4"><select class="form-select"id="dg-type"name="type"aria-label="type"onchange="ajax_get_dg_price()"><option value="0">全套</option><option value="1">加速</option><option value="2">拓展</option></select><label class="form-label"for="dg-type">套装类型</label></div></div></div><div class="row"style="text-align: left;"><div class="col-md-12"><div class="form-floating"><select class="form-select"id="dg-month"name="month"aria-label="type"onchange="ajax_get_dg_price()"><option value="1">月度(1个月)</option><option value="3">季度(3个月)</option><option value="6">半年度(6个月)</option><option value="12">年度(12个月)</option><option value="999">永久</option></select><label class="form-label"for="dg-type">开通时长</label></div></div></div><div class="form-text text-muted">续费价格：<span class="text-danger price">0.00</span>元</div></form>',
+            success: function (res, index) {
+                ajax_get_dg_price();
+                $('#dg-uin').val(uin);
+            },
+            yes: function (index, dom) {
+                select_payment();
+            },
+        });
+    }
+
+    function select_payment() {
+        {if condition="!config('sys.is_qqpay') && !config('sys.is_wxpay') && !config('sys.is_alipay')"}
+        x.notify('暂无支付渠道，请联系站长', 'danger');
+        return;
+        {/if}
+            layer.open({
+                type: 1,
+                shade: false,
+                title: false,
+                content: $('#payment-selector'),
+                cancel: function(){
+                    x.notify('交易取消', 'warning');
+                },
+            });
+        }
+
+        function ajax_shop_dg(pay_type) {
+            // $('#buy-dg').serialize()
+            let pamars = {
+                shop: 'dg',
+                pay_type: pay_type,
+                uin: x.getval('#dg-uin'),
+                pwd: x.getval('#dg-pwd'),
+                server_key: x.getval('#dg-servers'),
+                type: x.getval('#dg-type'),
+                month: x.getval('#dg-month'),
+                shopid: x.getval('#dg-month'),
+                data: $('#buy-dg').parseForm(),
+            }
+            x.ajax('/index/ajax/shop/buy', pamars, function (ret) {
+                if (ret.code == 1) {
+                    layer.confirm(ret.message, {
+                        btn: ['确定', '取消'],
+                        closeBtn: 0,
+                    }, function () {
+                        window.location.href = ret.data.success;
+                    }, function () {
+                        layer.closeAll();
+                    })
+                } else {
+                    x.notify(ret.message, 'warning');
+                }
+            })
+        }
+
+        getQuery = (url) => {
+            // str为？之后的参数部分字符串
+            const str = url.slice(url.indexOf('?') + 1)
+            // arr每个元素都是完整的参数键值
+            const arr = str.split('&')
+            // result为存储参数键值的集合
+            const result = {}
+            for (let i = 0; i < arr.length; i++) {
+                // item的两个元素分别为参数名和参数值
+                const item = arr[i].split('=')
+                result[item[0]] = item[1]
+            }
+            return result;
+        }
+
+        function ajax_login_dg(uin) {
+            layer.open({
+                title: uin + " - 登录/更新挂机",
+                btn: ['确认', '取消'],
+                btnAlign: 'c',
+                closeBtn: 0,
+                shadeClose: true,
+                content: '<form id="login-dg"><div class="row"style="text-align: left;"><div class="col-md-12"><div class="form-floating mb-4"><select class="form-select"id="dg-login-type"name="login_type"aria-label="type"onchange="loginTypeChanges(this)"><option value="pwd">密码登录</option></select><label class="form-label"for="dg-login-type">登录方式</label></div></div></div><div class="row"style="text-align: left;"id="type-pwd"><div class="col-md-12"><div class="form-floating"><input type="text"class="form-control"id="dg-pwd"name="pwd"placeholder="uin"><label class="form-label"for="dg-pwd">挂机密码</label><div class="form-text text-muted text-center">留空则使用上次更新的密码</div></div></div></div></form>',
+                success: function (res, index) {
+                    Codebase.helpersOnLoad(['jq-select2']);
+                    x.ajax('/index/dg/getCountries', null, function (ret) {
+                        for (i in ret.data) {
+                            $('#dg-phone-area').append("<option value=" + ret.data[i].code + ">" + ret.data[i].area_cn + '+' + ret.data[i].code + "</option>")
+                        }
+                    })
+                },
+                yes: function (index, dom) {
+                    login_type = x.getval('#dg-login-type');
+                    let params = {
+                        uin: uin,
+                        login_type: x.getval('#dg-login-type'),
+                        step: 'normal',
+                    };
+                    if (params.login_type == 'phone') {
+                        if (x.getval('#dg-phone')) {
+                            x.ajax('/index/dg/changePhone', { uin: uin, phone: x.getval('#dg-phone'), phone_area: x.getval('#dg-phone-area') }, function (ret) {
+                                console.log(ret);
+                            });
+                        }
+                        let jumpurl = '/cap_frame.php?&step=normal&aid=2081081773';
+                        captcha_frame = layer.open({
+                            type: 2,
+                            title: '滑块验证码',
+                            shade: 0.6,
+                            area: [$(window).width() > 450 ? '450px' : '100%', $(window).width() > 450 ? '450px' : '380px'],
+                            content: jumpurl,
+                        });
+                        return;
+                    } else if (params.login_type == 'pwd') {
+                        if (x.getval('#dg-pwd')) {
+                            x.ajax('/index/dg/changePassword', { uin: uin, pwd: x.getval('#dg-pwd') }, function (ret) {
+                                if (ret.code != 1) {
+                                    x.notify(ret.message, 'warning');
+                                }
+                            });
+                        }
+                    }
+                    x.ajax('/index/dg/login', params, function (ret) {
+                        if (ret.code == 400) {
+                            let params = getQuery(ret.data);
+                            let jumpurl = '/cap_frame.php?step=captcha&sid=' + params.sid + '&aid=' + params.aid + '&uin='+ params.uin;
+                            captcha_frame = layer.open({
+                                type: 2,
+                                title: '滑块验证码',
+                                shade: 0.6,
+                                area: [$(window).width() > 450 ? '450px' : '100%', $(window).width() > 450 ? '450px' : '380px'],
+                                content: jumpurl,
+                            });
+                        } else if (ret.code == 398) {
+                            layer.open({
+                                title: "设备锁验证",
+                                btn: ['确认', '取消'],
+                                btnAlign: 'c',
+                                closeBtn: 0,
+                                shadeClose: true,
+                                content: '<div class="row"><div class="col-md-12"><div class="form-text">请使用验证码验证设备锁 - 当前密保手机<span class="text-danger">' + ret.data.phone + '</span></div></div><div class="input-group mb-3"><input type="text"class="form-control"id="dg-sms_code"name="sms_code"placeholder="输入短信验证码"><button class="btn input-group-text"onclick="send_sms_code();"id="sendsms">发送验证码</button></div></div>',
+                                yes: function (index, dom) {
+                                    let params = {
+                                        uin: {$a_data['uin']},
+                                        step: 'sms',
+                                        code: x.getval('#dg-sms_code'),
+                                    };
+                                    x.ajax('/index/dg/login', params, function (ret) {
+                                        if (ret.code == 200) {
+                                            x.btn(ret.message);
+                                        } else if (ret.code == 500) {
+                                            x.notify(ret.message, 'warning');
+                                        } else {
+                                            x.notify(ret.message, 'warning');
+                                        }
+                                    })
+                                },
+                            });
+                        } else if (ret.code == 200) {
+                            x.btn(ret.message);
+                        } else {
+                            x.notify(ret.message, 'warning');
+                        }
+                    })
+                },
+            });
+        }
+
+        window.onqqlogin = function(d){
+            layer.close(captcha_frame);
+            login_type = x.getval('#dg-login-type')
+            let params = {
+                uin: {$a_data['uin']},
+                login_type: login_type,
+                step: d.step,
+                ticket: d.ticket,
+                rand: d.randstr,
+            };
+
+            if (d.step == 1) {
+                hash = x.getval('#hash');
+                let paras = {
+                    hash: hash,
+                    rand: d.randstr,
+                    step: 1,
+                    ticket: d.ticket,
+                    uin: {$a_data['uin']}
+                }
+                x.ajax('/index/dg/sms', paras, function (ret) {
+                    if (ret.code == 200) {
+                        layer.open({
+                            title: "身份验证",
+                            btn: ['确认', '取消'],
+                            btnAlign: 'c',
+                            closeBtn: 0,
+                            shadeClose: true,
+                            content: '<div class="col-md-12"><div class="form-floating"><input type="text" class="form-control" id="phone" placeholder="code"><label class="form-label" for="dg-code">手机号</label><div class="form-text text-muted text-center">请输入 <span id="s1-phone"></span>的完整手机号验证身份</div></div></div>',
+                            success: function (index, dom) {
+                                $('#s1-phone').html(ret.data.phone);
+                            },
+                            yes: function (index, dom) {
+                                phone = x.getval('#phone');
+                                let paras2 = {
+                                    hash: hash,
+                                    rand: d.randstr,
+                                    step: 2,
+                                    ticket: d.ticket,
+                                    uin: {$a_data['uin']},
+                                    phone: phone,
+                                }
+                                x.ajax('/index/dg/sms', paras2, function (ret) {
+                                    if (ret.code == 200) {
+                                        layer.open({
+                                            title: "身份验证",
+                                            btn: ['我已发送', '取消'],
+                                            btnAlign: 'c',
+                                            closeBtn: 0,
+                                            shadeClose: true,
+                                            content: '<form><div class="row"><div class="col-md-12"><div class="form-text">请使用密保手机号 <span id="phone"></span><br/>编辑短信 <span id="s2-sms"></span><br/>发送至 <span id="s2-phone"></span></div></div><input type="hidden" id="hash"></div></form>',
+                                            success: function (index, dom) {
+                                                $('#phone').val(phone);
+                                                $('#s2-sms').html(ret.data.sms);
+                                                $('#s2-phone').html(ret.data.to);
+                                            },
+                                            yes: function (index, dom) {
+                                                let paras3 = {
+                                                    // hash: hash,
+                                                    rand: d.randstr,
+                                                    step: 3,
+                                                    ticket: d.ticket,
+                                                    uin: {$a_data['uin']},
+                                                    phone: phone,
+                                                }
+                                                x.ajax('/index/dg/sms', paras3, function (ret) {
+                                                    if (ret.code == 200) {
+                                                        x.ajax('/index/dg/login', {uin: {$a_data['uin']}, login_type: 'pwd', step: 'normal'}, function (ret) {
+                                                            if (ret.code == 200) {
+                                                                x.btn(ret.message);
+                                                            } else {
+                                                                x.notify(ret.message, 'warning');
+                                                            }
+                                                        })
+                                                    } else {
+                                                        x.notify(ret.message, 'warning');
+                                                    }
+                                                })
+                                            },
+                                        });
+                                    } else {
+                                        x.notify(ret.message, 'warning');
+                                    }
+                                })
+                            },
+                        });
+                    }
+                })
+                return;
+            }
+
+            x.ajax('/index/dg/login', params, function (ret) {
+                if (ret.code == 200) {
+                    x.btn(ret.message);
+                } else if (ret.code == 398) {
+                    layer.open({
+                        title: "设备锁验证",
+                        btn: ['确认', '取消'],
+                        btnAlign: 'c',
+                        closeBtn: 0,
+                        shadeClose: true,
+                        content: '<div class="row"><div class="col-md-12"><div class="form-text">请使用验证码验证设备锁 - 当前密保手机<span class="text-danger">' + ret.data.phone + '</span></div></div><div class="input-group mb-3"><input type="text"class="form-control"id="dg-sms_code"name="sms_code"placeholder="输入短信验证码"><button class="btn input-group-text"onclick="send_sms_code();"id="sendsms">发送验证码</button></div></div>',
+                        yes: function (index, dom) {
+                            let params = {
+                                uin: {$a_data['uin']},
+                                step: 'sms',
+                                code: x.getval('#dg-sms_code'),
+                            };
+                            x.ajax('/index/dg/login', params, function (ret) {
+                                if (ret.code == 200) {
+                                    x.btn(ret.message);
+                                } else if (ret.code == 500) {
+                                    x.notify(ret.message, 'warning');
+                                } else {
+                                    x.notify(ret.message, 'warning');
+                                }
+                            })
+                        },
+                    });
+                } else if (ret.code == 399) {
+                    layer.open({
+                        title: "身份验证",
+                        btn: ['确认', '取消'],
+                        btnAlign: 'c',
+                        closeBtn: 0,
+                        shadeClose: true,
+                        content: '<form><div class="row"><div class="col-md-12"><div class="form-text">当前登录存在安全风险，为保障您的账号安全<br/>请使用常用设备或者经过身份验证后登陆</div></div><input type="hidden" id="hash"></div></form>',
+                        success: function (index, dom) {
+                            $('#hash').val(ret.data);
+                        },
+                        yes: function (index, dom) {
+                            let jumpurl = '/cap_frame.php?step=1&aid=2090581062' + '&uin='+ params.uin;
+                            captcha_frame = layer.open({
+                                type: 2,
+                                title: '滑块验证码',
+                                shade: 0.6,
+                                area: [$(window).width() > 450 ? '450px' : '100%', $(window).width() > 450 ? '450px' : '380px'],
+                                content: jumpurl,
+                            });
+                        },
+                    });
+                } else if (ret.code == 400) {
+                    let params = getQuery(ret.data);
+                    let jumpurl = '/cap_frame.php?step=captcha&sid=' + params.sid + '&aid=' + params.aid + '&uin='+ params.uin;
+                    captcha_frame = layer.open({
+                        type: 2,
+                        title: '滑块验证码',
+                        shade: 0.6,
+                        area: [$(window).width() > 450 ? '450px' : '100%', $(window).width() > 450 ? '450px' : '380px'],
+                        content: jumpurl,
+                    });
+                } else if (ret.code == 401) {
+                    layer.open({
+                        title: "提交验证码",
+                        btn: ['确认', '取消'],
+                        btnAlign: 'c',
+                        closeBtn: 0,
+                        shadeClose: true,
+                        content: '<div class="col-md-12"><div class="form-floating"><input type="text" class="form-control" id="dg-code" name="code" placeholder="code"><label class="form-label" for="dg-code">短信验证码</label><div class="form-text text-muted text-center">验证码发送成功，请输入验证码完成登录</div></div></div>',
+                        yes: function (index, dom) {
+                            let params = {
+                                uin: {$a_data['uin']},
+                                login_type: login_type,
+                                step: 'sms',
+                                code: x.getval('#dg-code'),
+                            };
+                            x.ajax('/index/dg/login', params, function (ret) {
+                                if (ret.code == 200) {
+                                    x.btn(ret.message);
+                                } else if (ret.code == 500) {
+                                    x.notify(ret.message, 'warning');
+                                } else {
+                                    x.notify(ret.message, 'warning');
+                                }
+                            })
+                        },
+                    });
+                } else {
+                    x.notify(ret.message, 'warning');
+                }
+            })
+        }
+
+        function send_sms_code()
+        {
+            let params = {
+                uin: {$a_data.uin},
+                step: "get_sms"
+            };
+            x.ajax('/index/dg/login', params, function (data) {
+                if (data.code == 200) {
+                    new InvokeSettime("#sendsms");
+                    x.notify(data.message, 'success');
+                    $('#sms_code').attr('issend','true');
+                } else {
+                    x.notify(data.message, 'warning');
+                }
+            })
+        }
+
+        function InvokeSettime(obj){
+            var countdown=60;
+            settime(obj);
+            function settime(obj) {
+                if (countdown == 0) {
+                    $(obj).attr("data-lock", "false");
+                    $(obj).text("获取验证码");
+                    countdown = 60;
+                    return;
+                } else {
+                    $(obj).attr("data-lock", "true");
+                    $(obj).attr("disabled",true);
+                    $(obj).text("重新发送（" + countdown + "）");
+                    countdown--;
+                }
+                setTimeout(function() {
+                        settime(obj) }
+                    ,1000)
+            }
+        }
+
+        function ajax_change_server(uin) {
+            layer.open({
+                title: uin + " - 更改挂机地区",
+                btn: ['确认', '取消'],
+                btnAlign: 'c',
+                closeBtn: 0,
+                shadeClose: true,
+                content: '<form id="change-server"><div class="row"style="text-align: left;"><div class="col-md-12"><div class="form-floating mb-4"><select class="form-select"id="dg-servers"name="server_key"aria-label="servers"></select><label class="form-label"for="dg-servers">挂机地区</label></div></div></div></form>',
+                success: function (res, index) {
+                    $('#dg-uin').val(uin);
+                    x.ajax('/index/dg/getServers', null, function (ret) {
+                        for (i in ret.data) {
+                            $('#dg-servers').append("<option value=" + i + ">" + ret.data[i] + "</option>")
+                        }
+                    })
+                },
+                yes: function (index, dom) {
+                    layer.close(index);
+                    x.ajax('/index/dg/changeServer', {uin: uin, server: x.getval('#dg-servers')}, function (ret) {
+                        if (ret.code == 1) {
+                            x.notify(ret.message, 'success');
+                            x.pjax('/index/console/qq/info/{$a_data["uin"]}');
+                        } else {
+                            x.notify(ret.message, 'warning');
+                        }
+                    })
+                },
+            });
+        }
+
+        function ajax_change_timing(uin, timing) {
+            layer.open({
+                title: uin + " - 更改挂机时间",
+                btn: ['确认', '取消'],
+                btnAlign: 'c',
+                closeBtn: 0,
+                shadeClose: true,
+                zIndex: '1000',
+                area: ['20%'],//设置相对于父页面的大小
+                content: '<div class="form-floating col-xl-12 mb-2"><input type="text"class="js-flatpickr form-control"id="timing"placeholder="请选择"data-enable-time="true"data-no-calendar="true"data-date-format="H:i"data-time_24hr="true"><label class="form-label"for="timing">挂机时间</label></div><div><span class="text-danger">点击上方数字选择你需要的挂机时间<br></span></div>',
+                success: function (res, index) {
+                    if (typeof timing !== 'undefined') {
+                        $("#timing").val(timing);
+                    }
+                    Codebase.helpersOnLoad(['js-flatpickr']);
+                },
+                yes: function (index, dom) {
+                    let timing = x.getval('#timing');
+                    let timingArr = timing.split(':');
+                    timing = Number(timingArr[0] * 60) + Number(timingArr[1]);
+                    layer.close(index);
+                    x.ajax('/index/dg/changeTiming', {uin: uin, timing: timing}, function (ret) {
+                        if (ret.code == 1) {
+                            x.notify(ret.message, 'success');
+                            x.pjax('/index/console/qq/info/{$a_data["uin"]}');
+                        } else {
+                            x.notify(ret.message, 'warning');
+                        }
+                    })
+                },
+            });
+        }
+
+        function ajax_change_setting(uin, project, status) {
+            x.ajax('/index/dg/changeSetting', {uin: uin, project: project, status: 1^status}, function (ret) {
+                if (ret.code == 1) {
+                    x.notify(ret.message, 'success');
+                    // x.pjax('/index/console/qq/info/{$a_data["uin"]}');
+                } else {
+                    x.notify(ret.message, 'warning');
+                }
+            })
+        }
+
+        function ajax_change_status(uin, status) {
+            x.ajax('/index/dg/changeStatus', {uin: uin, status: 1^status}, function (ret) {
+                if (ret.code == 1) {
+                    x.notify(ret.message, 'success');
+                    x.pjax('/index/console/qq/info/{$a_data["uin"]}');
+                } else {
+                    x.notify(ret.message, 'warning');
+                }
+            })
+        }
+
+        function ajax_dg_run(uin) {
+            x.ajax('/index/dg/run', {uin: uin}, function (ret) {
+                if (ret.code == 1) {
+                    x.notify(ret.message, 'success');
+                    x.pjax('/index/console/qq/info/{$a_data["uin"]}');
+                } else {
+                    x.notify(ret.message, 'warning');
+                }
+            })
+        }
+
+        function loginTypeChanges(_this) {
+            if ($(_this).prop("value") == 'phone') {
+                $('#type-phone').show();
+                $('#type-pwd').hide();
+            } else {
+                $('#type-pwd').show();
+                $('#type-phone').hide();
+            }
+        }
+
+        function ajax_get_dg_price() {
+            x.ajax('/index/dg/price', {type: x.getval('#dg-type'), month: x.getval('#dg-month')}, function (ret) {
+                $('.price').html(ret.data.price);
+            })
+        }
+
+        {if condition="$dg_uin"}
+        function getServerName() {
+            x.ajax('/index/dg/getServers', null, function (ret) {
+                $('.server').append(ret.data['{$dg_uin.server_key}']);
+            })
+        }
+        $(function () {
+            getServerName();
+        })
+        {/if}
+            {/if}
+</script>
+{/block}

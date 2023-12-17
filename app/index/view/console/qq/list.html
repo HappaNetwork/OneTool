@@ -1,0 +1,97 @@
+{extend name="common/layout"/}
+{block name="head"}{include file="console/head" /}{/block}
+{block name="main"}
+<div class="row">
+    <div class="col-12">
+        <div class="block block-rounded">
+            <div class="block-header block-header-default">
+                <h3 class="block-title">全部账号列表 - 扣扣星</h3>
+            </div>
+        </div>
+    </div>
+    <form class="push" action="{:url('/index/console/qq/list')}" method="POST">
+        <div class="input-group input-group-lg">
+            <input type="text" name="uin" class="form-control fs-sm" placeholder="输入QQ号码进行搜索" value="{$search}">
+            <a class="btn btn-alt-info opacity-50" href="{:url('/index/console/qq/list')}">
+                <i class="fa fa-times-circle"></i>
+            </a>
+            <button type="submit" class="btn btn-alt-info opacity-75">
+                <i class="fa fa-search"></i>
+            </button>
+        </div>
+    </form>
+    {if condition="count($list) eq 0"}
+    <div class="col-12">
+        <div class="block block-rounded">
+            <div class="block-content text-center">
+                <i class="si si-drawer fa-2x"></i>
+                <p class="text-muted fs-sm">
+                    暂无数据
+                </p>
+            </div>
+        </div>
+    </div>
+    {/if}
+    {foreach $list as $key => $value}
+    {php}
+    $v = unserialize($value['data']);
+    if($v['nickname'] != null){
+    $nickname = $v['nickname'];
+    $uin = $v['uin'];
+    }else{
+    $nickname = $v['uin'];
+    }
+    {/php}
+    <div class="col-md-6 col-xl-3">
+        <div class="block block-rounded text-center">
+            <div class="block-content block-content-full bg-primary">
+                <img class="img-avatar img-avatar-thumb" src="//q2.qlogo.cn/g?b=qq&nk={$v.uin}&s=140" alt="">
+            </div>
+            <div class="block-content">
+                <div class="fw-semibold mb-1">{$nickname}</div>
+                <div class="fs-sm text-muted mb-1">{$value.user_id}</div>
+                {if condition="$value.state eq 1"}
+                <div class="fs-sm text-success mb-1">正常运行中</div>
+                {else /}
+                <div class="fs-sm text-danger mb-1">状态已失效</div>
+                {/if}
+                <div class="fs-sm text-muted"><i class="far fa-clock opacity-75"></i> {:date("m-d
+                    H:i",strtotime($value.addtime))}</div>
+            </div>
+            <div class="block-content block-content-full ">
+                <div class="row g-sm">
+                    <div class="col-8">
+                        <a class="btn btn-sm btn-alt-primary w-100" href="{:url('/index/console/qq/info/')}{$v.uin}" data-pjax>
+                            管理账号
+                        </a>
+                    </div>
+                    <div class="col-4">
+                        <a class="btn btn-sm btn-alt-danger w-100" onclick="ajax_qq_delete('{$v.uin}')">
+                            <i class="si si-close"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {/foreach}
+</div>
+{/block}
+{block name="foot"}
+<script>
+    function ajax_qq_delete(user_id)
+    {
+        x.del('/index/ajax/qq/delete', 'user_id=' + user_id, function (data) {
+            if (data.code == 1) {
+                x.notify(data.message, 'success');
+                setTimeout(function () {
+                    // x.pjax("{:url(\"/index/console/qq/list\")}");
+                    window.location.href = '{:url(\"/index/console/qq/list\")}';
+                }, 1000);
+            } else {
+                x.notify(data.message, 'warning');
+            }
+        });
+    }
+</script>
+{/block}

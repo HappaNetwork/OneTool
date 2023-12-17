@@ -1,0 +1,134 @@
+{extend name="common/layout"/}
+{block name="head"} {include file="console/head" /}{/block}
+{block name="main"}
+<div class="row">
+    <div class="col-md-6 col-xl-6">
+        <div class="block block-themed block-rounded">
+            <div class="block-header bg-gd-dusk">
+                <h3 class="block-title">视频解析</h3>
+            </div>
+            <div class="block-content">
+                <div class="mb-4">
+                    <div class="input-group">
+                        <input type="text" class="form-control form-control-alt fs-sm" id="url" placeholder="请在此粘贴分享链接">
+                        <button type="button" class="btn btn-alt-primary" onclick="ajax_analyse_video();">
+                            <i class="fa fa-search me-1"></i> 解析
+                        </button>
+                    </div>
+                    <div class="form-text text-muted text-end fs-xs">粘贴视频地址时无需删除文案 但如果视频链接正确但解析失败请删掉文案后重试</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6 col-xl-4" style="display: none;" id="video-success">
+        <div class="block block-rounded d-flex flex-column h-100 mb-0">
+            <a class="block-content block-content-full bg-image flex-grow-0" id="video-cover" target="_blank">
+              <span class="badge bg-black-25 fw-bold p-2 text-uppercase">
+                点击预览
+              </span>
+            </a>
+            <div class="block-content flex-grow-1 h-25">
+                <h5 class="mb-1" id="video-desc">
+                    视频标题
+                </h5>
+                <p class="fw-medium fs-sm text-muted" id="video-author">
+                    视频作者
+                </p>
+            </div>
+            <div class="block-content py-3 bg-body-light flex-grow-0">
+                <div class="row g-0 fs-sm text-center">
+                    <div class="col-6">
+                      <span class="text-muted fw-semibold">
+                        <i class="fa fa-fw fa-heart opacity-50 me-1"></i>
+                          <span id="video-like">点赞数</span>
+                      </span>
+                    </div>
+                    <div class="col-6">
+                      <span class="text-muted fw-semibold">
+                        <i class="fa fa-fw fa-clock opacity-50 me-1"></i>
+                          <span id="video-time">视频时间</span>
+                      </span>
+                    </div>
+                </div>
+            </div>
+            <div class="block-content block-content-full block-content-sm text-center">
+                <a class="btn btn-alt-secondary fs-sm" href="" target="_blank" id="download-music">下载音乐</a>
+                <a class="btn btn-alt-primary fs-sm" href="" target="_blank" id="download-video">下载视频</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6" id="image-success" style="display: none;">
+        <div class="block block-rounded">
+            <div class="block-header block-header-default">
+                <h3 class="block-title">图集预览<small class="fs-xs">点击图片可跳转，请自行保存</small></h3>
+            </div>
+            <div class="block-content block-content-full">
+                <div id="carouselExampleCaptions" class="carousel slide">
+                    <div class="carousel-inner" id="image-preview">
+
+                    </div>
+                    <button class="carousel-control-prev" type="button" data-bs-target="#carouselExampleCaptions" data-bs-slide="prev">
+                        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                        <span class="visually-hidden">Previous</span>
+                    </button>
+                    <button class="carousel-control-next" type="button" data-bs-target="#carouselExampleCaptions" data-bs-slide="next">
+                        <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                        <span class="visually-hidden">Next</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{/block}
+{block name="foot"}
+<script>
+    let image_list = [];
+
+    function ajax_analyse_video()
+    {
+        let url = x.getval('#url', '请先输入视频链接！');
+        if (!url) return;
+        x.ajax('/index/tool/analyse', {type: 'video', url: x.getval('#url')}, function (data) {
+            if (data.code == 200) {
+                if (data.data.type == 'douyin') {
+                    x.notify(data.message, 'success');
+                    if (data.data.images) {
+                        $('#image-preview').children().remove();
+                        $('#video-cover').attr('style', 'height:180px; background-image:url('+ data.data.cover +')').attr('href', data.data.images[0]);
+                        image_list = data.data.images;
+                        let className = '';
+                        for (var i = 0; i< image_list.length; i++) {
+                            className = i === 0 ? 'active' : '';
+                            $('#image-preview').append("<div class=\"carousel-item "+ className +"\"> <img onclick=\"javascript:window.open('" + image_list[i] + "')\" src=\"" + image_list[i] + "\" class=\"d-block w-100\" alt=\"image\"> <div class=\"carousel-caption d-none d-md-block bg-black-50 rounded-3 px-3\"> <h5 class=\"h3 mb-2 image-author\">@"+ data.data.author +"</h5> <p class=\"mb-0 image-desc\">"+ data.data.desc +"</p> </div></div>");
+                        }
+                        $('#image-success').show();
+                        $('#video-success').hide();
+                    } else {
+                        $('#video-cover').attr('style', 'height:180px; background-image:url('+ data.data.cover +')').attr('href', data.data.url);
+                        $('#download-video').attr("href", data.data.url)
+                        $('#video-success').show()
+                        $('#image-success').hide();
+                        $('#video-desc').html(data.data.desc);
+                        $('#video-author').html(data.data.author);
+                        $('#video-like').html(data.data.like);
+                        $('#video-time').html(formartTime(data.data.time))
+                        $('#image-preview').children().remove();
+                    }
+                    $('#download-music').attr("href", data.data.music.url)
+                }
+            } else {
+                x.notify(data.message, 'warning');
+            }
+        })
+    }
+
+    function formartTime(timestamp) {
+        var date = new Date(timestamp * 1000);//时间戳为10位需*1000，时间戳为13位的话不需乘1000
+        var Y = date.getFullYear() + '-';
+        var M = (date.getMonth() + 1 < 10 ? '0' + (date.getMonth() + 1) : date.getMonth() + 1) + '-';
+        var D = (date.getDate() < 10 ? '0' + (date.getDate()) : date.getDate()) + ' ';
+        return Y + M + D;
+    }
+</script>
+{/block}

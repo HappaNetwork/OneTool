@@ -1,0 +1,332 @@
+{extend name="common/layout"/}
+{block name="head"} {include file="console/head" /}{/block}
+{block name="main"}
+<div class="row items-push justify-content-center">
+    {if condition="config('sys.login_system_type') eq 1"}
+    <div class="col-md-4">
+        <div class="block block-rounded mb-0">
+            <div class="block-header block-header-default">
+                <h3 class="block-title">添加账号（请使用QQ账号添加）</h3>
+            </div>
+            <div class="block-content block-content-full text-center bg-body-dark">
+                <img id="avatar" class="img-avatar img-avatar96 img-avatar-thumb" src="//q2.qlogo.cn/g?b=qq&nk=10000&s=140" alt="">
+            </div>
+            <div class="block-content block-content-full">
+                <div class="login">
+                    <div class="mb-3">
+                        <div class="form-floating">
+                            <input type="text" class="form-control" id="login-account" name="login-account" placeholder="输入你的QQ账号" onkeyup="this.value=this.value.replace(/\D/g,'')" oninput="if(value.length>10) value=value.slice(0,10)">
+                            <label class="form-label fs-sm" for="login-account">QQ账号</label>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <div class="form-floating">
+                            <input type="password" class="form-control" id="login-password" name="login-password" placeholder="输入你的QQ密码">
+                            <label class="form-label fs-sm" for="login-password">QQ密码</label>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <div class="form-floating">
+                            <select class="form-select fs-sm" id="area" name="area">
+                                <option value="sc">四川省</option>
+                                <option value="sh">上海市</option>
+                                <option value="fj">福建省</option>
+                                <option value="bj">北京市</option>
+                                <option value="gd">广东省</option>
+                            </select>
+                            <label class="form-label fs-sm" for="area">登录地区</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="smscode" style="display: none;">
+                    <p class="text-danger fw-semibold fs-sm text-center">
+                        为保障帐号安全，本次登录需要进行短信验证
+                    </p>
+                    <div class="input-group mb-3">
+                        <input type="text" class="form-control" id="sms_code" name="sms_code" placeholder="输入短信验证码">
+                        <button class="btn input-group-text" onclick="send_sms_code();" id="sendsms">发送验证码</button>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <button type="submit" class="btn btn-alt-primary w-100" onclick="ajax_qq_login();">
+                        <i class="fa fa-arrow-right opacity-50 me-1"></i> 登录
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    {/if}
+    <div class="col-md-7">
+        <div class="block block-rounded mb-3">
+            <div class="block-header block-header-default">
+                <h3 class="block-title">扫码添加</h3>
+                <div class="block-options">
+                    <button type="button" class="btn btn-sm btn-outline-primary" onclick="ajax_qq_qrlogin();">扫码完成，点击验证</button>
+                </div>
+            </div>
+            <div class="block-content text-center">
+                <div class="alert alert-primary d-flex align-items-center" role="alert">
+                    <i class="si si-magic-wand me-2"></i>
+                    <p class="mb-0" id="qr-alert">点击图片即可获取二维码</p>
+                </div>
+                <div class="block" id="qr-img" account="" area="">
+                    <p class="mt-4">
+                        <i class="si si-camera fa-4x text-muted"></i>
+                    </p>
+                </div>
+            </div>
+            {if condition="isMobile()"}
+            <hr>
+            <div class="block-content block-content-full block-content-sm text-center" onclick="mloginurl()">
+                <button type="button" class="btn btn-alt-primary me-1 fs-xs">跳转到QQ快捷扫码</button>
+            </div>
+            {/if}
+        </div>
+        <div class="alert alert-info d-flex align-items-center justify-content-between" role="alert">
+            <p class="mb-0">
+                1、登陆地点选择您QQ登陆过的地方或者离你最近的地方使用，尽量避免异地登陆。
+                <br>
+                2、首次使用可能会因为异地登陆而被TX临时冻结帐号，解除冻结后再添加一次即可。
+                <br>
+                3、异地登录后可能提示被盗号的提醒，属于安全误报请勿担心，改密后既不会再提醒。
+                <br>
+                4、使用前可绑定QQ安全中APP，将异地登陆确认为本人操作，可避免账号被再次冻结。
+            </p>
+            <i class="fa fa-fw fa-info ms-2"></i>
+        </div>
+    </div>
+</div>
+{/block}
+{block name="foot"}
+<script>
+    function ajax_qq_login()
+    {
+        var account = x.getval('#login-account', '请先输入QQ账号！');
+        if (!account) return;
+        var password = x.getval('#login-password', '请先输入QQ密码！');
+        if (!password) return;
+        var area = x.getval('#area', '请先选择登录地区');
+        if (!area) return;
+        $('#avatar').attr("src", "//q2.qlogo.cn/g?b=qq&nk=" + account + "&s=140");
+        var params = {
+            account: account,
+            password: password,
+            area: area,
+        };
+        if ($('.smscode').is(":visible")) {
+            if ($('#sms_code').attr('issend') == 'false') {
+                x.notify('请先发送短信验证码', 'warning');
+                layer.closeAll(load);
+                return;
+            }
+            var sms_code = x.getval('#sms_code');
+            if (sms_code == '') {
+                x.notify('短信验证码不能为空', 'warning');
+                layer.closeAll();
+                return;
+            }
+            Object.assign(params, {
+                sms_code: sms_code,
+            });
+        }
+        x.ajax('/index/ajax/qq/add', params, function (data) {
+            if (data.code == 1) {
+                x.notify(data.message, 'success');
+                setTimeout(function () {
+                    // x.pjax('{:url("/index/console/qq/list")}');
+                    window.location.href = '{:url("/index/console/qq/list")}';
+                }, 1000)
+            } else if (data.code == 201) {
+                $('.login').hide();
+                $('.smscode').show();
+            }  else if (data.code == 207) {
+                var jumpurl = '/cap_frame.php?sid=' + data.data.sid + '&aid=' + data.data.aid + '&uin='+ data.data.uin;
+                captcha_frame = layer.open({
+                    type: 2,
+                    title: '滑块验证码',
+                    shade: 0.6,
+                    area: [$(window).width() > 450 ? '450px' : '100%', $(window).width() > 450 ? '450px' : '380px'],
+                    content: jumpurl,
+                });
+            } else {
+                x.notify(data.message, 'warning');
+            }
+        })
+    }
+
+    function send_sms_code()
+    {
+        account = x.getval('#login-account');
+        password = x.getval('#login-password');
+        area = x.getval('#area');
+        var params = {
+            account: account,
+            password: password,
+            area: area,
+        };
+        x.ajax('/index/ajax/qq/smscode', params, function (data) {
+            if (data.code == 1) {
+                new InvokeSettime("#sendsms");
+                x.notify(data.message, 'success');
+                $('#sms_code').attr('issend','true');
+            } else {
+                x.notify(data.message, 'warning');
+            }
+        })
+    }
+
+    $('#qr-img').click(function () {
+        if ($('#qr-img').attr('account')) {
+            var account = $('#qr-img').attr('account');
+            var area = $('#qr-img').attr('area')
+            x.ajax('/index/ajax/qq/getQrimg', {account: account, area: area},function (data) {
+                if (data.code == 1) {
+                    $('#qr-img').html('<img src="data:image/png;base64,'+ data.data.qrimg +'" height="145px;">');
+                }
+            })
+        } else {
+            layer.open({
+                title: "获取登录二维码",
+                btn: ['确认', '取消'],
+                btnAlign: 'c',
+                closeBtn: 0,
+                shadeClose: true,
+                content: '<form><div class="row"><div class="col-md-12"><div class="form-floating mb-2"><input type="text"class="form-control"id="login-account2"name="login-account2"placeholder="输入要登陆的QQ账号"><label class="form-label"for="login-account2">QQ账号</label><div class="form-text text-muted">请输入你要登陆的QQ账号</div></div><div class="form-floating"><select class="form-select"id="area2"name="area2"aria-label="登录地区"><option value="sc">四川省</option><option value="sh">上海市</option><option value="fj">福建省</option><option value="bj">北京市<option value="gd">广东省</option></option></select><label class="form-label"for="area2">登录地区</label></div></div></div></form>',
+                yes: function (index, dom) {
+                    layer.close(index);
+                    var account = x.getval('#login-account2', '请先输入QQ账号！');
+                    if (!account) return;
+                    var area = x.getval('#area2', '请先选择登录地区');
+                    if (!area) return;
+                    x.ajax('/index/ajax/qq/getQrimg', {account: account, area: area},function (data) {
+                        if (data.code == 1) {
+                            $('#qr-img').attr('account', account);
+                            $('#qr-img').attr('area', account);
+                            $('#qr-img').attr('qrbase', data.data.qrimg);
+                            $('#qr-img').html('<img src="data:image/png;base64,'+ data.data.qrimg +'" height="145px;">');
+                        }
+                    })
+                    Codebase.block('state_normal', '#qr-img');
+                },
+            });
+        }
+    });
+
+    function ajax_qq_qrlogin() {
+        var account = $('#qr-img').attr('account');
+        var area = $('#qr-img').attr('area');
+        if (!account) return x.notify('请先获取二维码');
+        x.ajax('/index/ajax/qq/qrLogin', {account: account, area: area},function (data) {
+            if (data.code == 1) {
+                x.notify(data.message, 'success');
+                setTimeout(function () {
+                    window.location.href = "{:url(\"/index/console/qq/list\")}";
+                }, 1000)
+            } else {
+                x.notify(data.message, 'warning')
+                $('#qr-alert').html(data.message);
+            }
+        })
+    }
+
+    function InvokeSettime(obj){
+        var countdown=60;
+        settime(obj);
+        function settime(obj) {
+            if (countdown == 0) {
+                $(obj).attr("data-lock", "false");
+                $(obj).text("获取验证码");
+                countdown = 60;
+                return;
+            } else {
+                $(obj).attr("data-lock", "true");
+                $(obj).attr("disabled",true);
+                $(obj).text("重新发送（" + countdown + "）");
+                countdown--;
+            }
+            setTimeout(function() {
+                    settime(obj) }
+                ,1000)
+        }
+    }
+
+    window.onqqlogin = function(d){
+        layer.close(captcha_frame);
+        console.log(d);
+        account = x.getval('#login-account');
+        password = x.getval('#login-password');
+        area = x.getval('#area');
+        var params = {
+            account: account,
+            password: password,
+            area: area,
+            ticket: d.ticket
+        };
+        x.ajax('/index/ajax/qq/dovc', params, function (data) {
+            if (data.code == 1) {
+                x.notify(data.message, 'success');
+                setTimeout(function () {
+                    // x.pjax('{:url("/index/console/qq/list")}');
+                    window.location.href = '{:url("/index/console/qq/list")}';
+                }, 1000)
+            } else if (data.code == 201) {
+                $('.login').hide();
+                $('.smscode').show();
+            } else {
+                x.notify(data.message, 'warning');
+            }
+        })
+    }
+
+    function mloginurl(){
+        var qrcodeimg = $('#qr-img').attr('qrbase');
+        if (!qrcodeimg) return x.notify('请先获取二维码');
+        $.post('/index/ajax/qq/get_qrlogin', "image=" + encodeURIComponent('data:image/png;base64,' + qrcodeimg), function (arr) {
+            if (arr.code === 1) {
+                $("#loginmsg").html("扫码成功后，请返回此页面");
+                var ua = window.navigator.userAgent.toLowerCase();
+                var is_ios = ua.indexOf('iphone')>-1 || ua.indexOf('ipad')>-1;
+                var schemacallback = '';
+                if(is_ios){
+                    schemacallback = 'weixin://';
+                }else if(ua.indexOf('ucbrowser')>-1){
+                    schemacallback = 'ucweb://';
+                }else if(ua.indexOf('meizu')>-1){
+                    schemacallback = 'mzbrowser://';
+                }else if(ua.indexOf('liebaofast')>-1){
+                    schemacallback = 'lb://';
+                }else if(ua.indexOf('baidubrowser')>-1){
+                    schemacallback = 'bdbrowser://';
+                }else if(ua.indexOf('baiduboxapp')>-1){
+                    schemacallback = 'bdapp://';
+                }else if(ua.indexOf('mqqbrowser')>-1){
+                    schemacallback = 'mqqbrowser://';
+                }else if(ua.indexOf('qihoobrowser')>-1){
+                    schemacallback = 'qihoobrowser://';
+                }else if(ua.indexOf('chrome')>-1){
+                    schemacallback = 'googlechrome://';
+                }else if(ua.indexOf('sogoumobilebrowser')>-1){
+                    schemacallback = 'SogouMSE://';
+                }else if(ua.indexOf('xiaomi')>-1){
+                    schemacallback = 'miuibrowser://';
+                }else{
+                    schemacallback = 'googlechrome://';
+                }
+                if(is_ios){
+                    alert('跳转到QQ登录后请手动返回当前浏览器');
+                    window.location.href='wtloginmqq3://ptlogin/qlogin?qrcode='+encodeURIComponent(arr.data.url)+'&schemacallback='+encodeURIComponent(schemacallback);
+                }else{
+                    window.location.href='wtloginmqq://ptlogin/qlogin?qrcode='+encodeURIComponent(arr.data.url)+'&schemacallback='+encodeURIComponent(schemacallback);
+                }
+            } else {
+                x.notify(arr.message, 'warning');
+            }
+        });
+    }
+
+    $(function(){
+        Codebase.block('state_loading', '#qr-img');
+    });
+</script>
+{/block}
+

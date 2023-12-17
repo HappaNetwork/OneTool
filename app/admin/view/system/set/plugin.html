@@ -1,0 +1,278 @@
+{extend name="common/layout"/}
+{block name="head"} {include file="system/head" /}{/block}
+{block name="main"}
+<style>
+    .table-nowrap td,th {
+        white-space: nowrap;
+    }
+</style>
+<div class="block block-rounded">
+    <div class="block-header block-header-default">
+        <h3 class="block-title">功能插件设置</h3>
+    </div>
+    <div class="block-content block-content-full">
+
+        <table class="table table-striped table-borderless table-vcenter">
+            <thead class="thead-light">
+            <tr>
+                <th colspan="2">系统功能</th>
+                <th class="d-none d-md-table-cell" style="width: 180px;">操作</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr>
+                <td class="text-center" style="width: 65px;">
+                    <svg t="1647614710940" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="3381" width="35" height="35"><path d="M706.519 1000.53c-67.857 0-129.229-16.711-164.195-44.674-1.447-1.147-3.509-1.815-5.707-1.815-22.118 1.434-36.673 1.434-57.235 0-3.126 0.014-4.875 0.56-6.431 1.815-35.061 27.989-96.461 44.674-164.277 44.674-111.056 0-194.805-42.954-194.805-99.902 0-32.276 27.511-61.331 75.489-79.708 2.102-0.819 3.632-2.281 4.11-3.946 0.492-1.747-0.259-3.126-0.97-3.959-14.063-16.603-26.583-34.42-37.205-53.003-1.078-1.898-3.509-3.291-6.144-3.55-3.659 0.245-6.13 0.928-7.66 2.608-22.405 24.931-45.289 34.571-65.291 28.208-7.987-2.54-19.47-9.202-28.262-26.474-19.948-39.213-17.599-112.503 5.871-182.381 18.446-55.077 54.695-97.089 81.852-122.635 0.697-0.655 1.911-2.13 1.584-4.014-1.161-6.854-1.721-13.189-1.721-19.415 0-26.528 8.206-52.469 24.371-77.087 0.56-0.847 0.791-1.761 0.723-2.717-0.164-2.471-0.301-4.983-0.301-7.455 0-180.115 155.921-326.67 347.573-326.67 191.665 0 347.586 146.541 347.586 326.67 0 2.307-0.123 4.602-0.301 6.895-0.041 0.791 0.191 1.693 0.737 2.498 16.493 24.726 24.863 50.913 24.863 77.878 0 6.608-0.601 13.189-1.829 20.125-0.355 1.966 0.833 3.399 1.57 4.11 26.883 25.463 62.723 67.257 81.033 121.91 23.456 69.823 25.819 143.087 5.871 182.326-8.793 17.285-20.261 23.948-28.331 26.501a41.074 41.074 0 0 1-12.165 1.843c-21.408 0-40.619-16.247-52.947-29.873-1.516-1.693-3.782-2.622-6.267-2.622-3.959 0.314-6.308 1.666-7.401 3.578-10.732 18.665-23.293 36.468-37.328 52.934-0.518 0.628-1.488 2.13-0.97 3.973 0.45 1.584 2.034 3.113 4.205 3.946 48.429 18.691 75.121 46.954 75.121 79.571 0 56.894-83.749 99.834-194.819 99.834z m-169.902-87.449c11.373 0 22.474 3.809 31.212 10.718 27.198 21.763 81.593 35.772 138.69 35.772 93.921 0 153.859-34.898 153.859-58.914 0-13.653-19.211-29.887-48.947-41.37-14.049-5.447-24.821-17.012-28.822-30.953-4.068-14.513-0.655-30.037 9.107-41.643 12.507-14.663 23.606-30.393 33.055-46.859 7.714-13.462 21.886-22.419 37.86-23.893 1.556-0.177 3.317-0.259 5.066-0.259 14.117 0 27.484 5.899 36.7 16.165 10.758 11.892 19.524 16.343 22.514 16.343 10.117-5.762 25.273-68.881-4.219-156.686-15.633-46.654-46.871-82.944-70.342-105.171-11.36-10.718-16.507-26.118-13.735-41.165 0.779-4.397 1.174-8.642 1.174-12.82 0-18.719-6.035-37.26-17.954-55.105-5.598-8.356-8.206-18.091-7.537-28.14 0.109-1.447 0.191-2.731 0.191-4.028 0-157.532-137.557-285.71-306.626-285.71S201.25 187.54 201.25 345.073c0 1.53 0.096 3.1 0.205 4.588 0.71 9.953-1.829 19.661-7.359 28.071-11.701 17.845-17.641 36.209-17.641 54.613 0 3.905 0.369 8.001 1.133 12.521 2.554 14.828-2.622 30.051-13.83 40.673-23.797 22.391-55.392 58.874-71.134 105.895-29.505 87.873-14.336 151.006-3.741 156.905 1.829-0.109 9.953-3.1 22.214-16.753 10.459-11.497 25.996-17.449 41.875-15.92 15.892 1.474 30.065 10.431 37.834 23.934 9.407 16.452 20.48 32.208 32.918 46.899 9.83 11.591 13.258 27.156 9.134 41.629-3.959 13.995-14.759 25.614-28.863 31.007-29.873 11.455-49.18 27.716-49.18 41.466 0 24.044 59.924 58.942 153.845 58.942 57.071 0 111.507-14.009 138.704-35.717 9.995-8.001 22.201-11.782 35.226-10.636 17.872 1.229 31.744 1.257 50.517-0.028a70.953 70.953 0 0 1 3.509-0.082z" p-id="3382"></path></svg>
+                </td>
+                <td>
+                    <span class="fs-6 fw-semibold text-primary">QQ快捷登录</span>
+                    <div class="text-muted my-1 fs-sm">开启后可使用QQ快捷登陆网站</div>
+                </td>
+                <td class="d-md-table-cell">
+                    <div class="btn-group">
+                        <div class="form-check form-switch">
+                            <input type="checkbox" class="form-check-input" name="is_qqlogin" onclick="ajax_edit_config(this)" {if condition="config('sys.is_qqlogin') eq 1"}checked{/if}>
+                        </div>
+                    </div>
+                </td>
+            </tr>
+            <tr>
+                <td class="text-center" style="width: 65px;">
+                    <i class="si si-plane fa-2x"></i>
+                </td>
+                <td>
+                    <span class="fs-6 fw-semibold text-primary">QQ访问地址跳出提示页</span>
+                    <div class="text-muted my-1 fs-sm">开启后在QQ内打开网址就会提示页面引导在浏览器打开</div>
+                </td>
+                <td class="d-md-table-cell">
+                    <div class="btn-group">
+                        <div class="form-check form-switch">
+                            <input type="checkbox" class="form-check-input" name="is_qqjump" onclick="ajax_edit_config(this)" {if condition="config('sys.is_qqjump') eq 1"}checked{/if}>
+                        </div>
+                    </div>
+                </td>
+            </tr>
+            <tr>
+                <td class="text-center" style="width: 65px;">
+                    <i class="si si-rocket fa-2x"></i>
+                </td>
+                <td>
+                    <span class="fs-6 fw-semibold text-primary">QQ等级代练</span>
+                    <div class="text-muted my-1 fs-sm">配置官方登录系统后开启，可在扣扣星内使用等级代练</div>
+                    <div class="text-warning my-1 fs-sm">提示：你需要在<a href="https://login.qqshabi.cn" target="_blank">这里</a>充值余额才可以使用</div>
+                </td>
+                <td class="d-md-table-cell">
+                    <div class="btn-group">
+                        <div class="form-check form-switch">
+                            <input type="checkbox" class="form-check-input" name="is_qqdg" onclick="ajax_edit_config(this)" {if condition="config('sys.is_qqdg') eq 1"}checked{/if}>
+                        </div>
+                    </div>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+
+        <div class="table-responsive table-nowrap">
+            <table class="table table-striped table-borderless table-vcenter">
+                <thead>
+                    <tr>
+                        <th colspan="2">功能代理</th>
+                        <th>个人密钥 secret</th>
+                        <th>订单号 orderno</th>
+                        <th style="width: 180px;">操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td style="width: 65px;">
+                            <i class="si si-chemistry fa-2x"></i>
+                        </td>
+                        <td>
+                            <span class="fs-6 fw-semibold text-primary">网易云代理</span>
+                            <div class="text-muted my-1 fs-sm">开启后可使用代理运行网易云任务<br><a href="http://www.xdaili.cn/"  target="_blank">点我购买动态转发并填入对接信息</a></div>
+                        </td>
+                        <td>
+                            <div class="input-group">
+                                <input type="text" class="form-control" id="netease_proxy_secret" placeholder="输入你的secret" value="{:config('sys.netease_proxy_secret')}">
+                            </div>
+                        </td>
+                        <td>
+                            <div class="input-group">
+                                <input type="text" class="form-control" id="netease_proxy_orderno" placeholder="输入你的orderno" value="{:config('sys.netease_proxy_orderno')}">
+                                <button type="button" class="btn btn-alt-primary" onclick="ajax_edit_proxy();">
+                                    保存
+                                </button>
+                            </div>
+                        </td>
+                        <td class="d-md-table-cell">
+                            <div class="btn-group">
+                                <div class="form-check form-switch">
+                                    <input type="checkbox" class="form-check-input" name="is_netease_proxy" onclick="ajax_edit_config(this)" {if condition="config('sys.is_netease_proxy') eq 1"}checked{/if}>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="table-responsive table-nowrap">
+            <table class="table table-striped table-borderless table-vcenter">
+                <thead>
+                    <tr>
+                        <th colspan="2">小工具</th>
+                        <th>同账号每日限制使用次数</th>
+                        <th style="width: 180px;">开关</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td style="width: 65px;">
+                            <i class="si si-chemistry fa-2x"></i>
+                        </td>
+                        <td>
+                            <span class="fs-6 fw-semibold text-primary">网易云小工具</span>
+                            <div class="text-muted my-1 fs-sm">开启后可使用刷听歌次数的网易云小工具</div>
+                        </td>
+                        <td>
+                            <div class="input-group">
+                                <input type="number" class="form-control" id="netease_tool_limit" placeholder="输入同账号限制使用次数" value="{:config('sys.netease_tool_limit')}">
+                                <button type="button" class="btn btn-alt-primary" onclick="ajax_edit_netease_tool();">
+                                    保存
+                                </button>
+                            </div>
+                        </td>
+                        <td class="d-md-table-cell">
+                            <div class="btn-group">
+                                <div class="form-check form-switch">
+                                    <input type="checkbox" class="form-check-input" name="is_netease_tool" onclick="ajax_edit_config(this)" {if condition="config('sys.is_netease_tool') eq 1"}checked{/if}>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="table-responsive table-nowrap">
+            <table class="table table-striped table-borderless table-vcenter">
+                <thead>
+                    <tr>
+                        <th colspan="2">QQ登录</th>
+                        <th>官方登录系统对接密钥 key</th>
+                        <th>同IP限制登录失败次数</th>
+                        <th style="width: 180px;">QQ登录方式</th>
+                        <th style="width: 180px;">仅会员账密</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td style="width: 65px;">
+                            <i class="si si-compass fa-2x"></i>
+                        </td>
+                        <td>
+                            <span class="fs-6 fw-semibold text-primary">官方登录系统</span>
+                            <div class="text-muted my-1 fs-sm">开启后可使用账号密码登录<br><a href="http://login.qqshabi.cn/"  target="_blank">点我获取对接信息，不想付费请开启仅扫码登录</a></div>
+                        </td>
+                        <td style="width: 20%">
+                            <div class="input-group">
+                                <input type="text" class="form-control" id="login_system_key" placeholder="输入你的key" value="{:config('sys.login_system_key')}">
+                            </div>
+                        </td>
+                        <td style="width: 25%">
+                            <div class="input-group">
+                                <input type="text" class="form-control" id="login_system_iplimit" placeholder="相同IP限制每24小时登录失败次数" value="{:config('sys.login_system_iplimit')}">
+                                <button type="button" class="btn btn-alt-primary" onclick="ajax_edit_login_system();">
+                                    保存
+                                </button>
+                            </div>
+                        </td>
+                        <td>
+                            <select class="form-select" id="login_system_type" name="login_system_type" onchange="selChange(this)">
+                                <option value="1"{if condition="config('sys.login_system_type') eq 1"}selected{/if}>账密+扫码</option>
+                                <option value="2"{if condition="config('sys.login_system_type') eq 2"}selected{/if}>仅扫码</option>
+                            </select>
+                        </td>
+                        <td>
+                            <div class="form-check form-switch align-items-center">
+                                <input type="checkbox" class="form-check-input" name="login_system_vip" onclick="ajax_edit_config(this)" {if condition="config('sys.login_system_vip') eq 1"}checked{/if}>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{/block}
+{block name="foot"}
+<script>
+    function ajax_edit_config(_this) {
+        var key = $(_this).prop("name"), val = $(_this).prop("checked");
+        val ? val = 1 : val = 0;
+        x.ajax('/admin/ajax/set/config', key + '=' + val, function (data) {
+            if (data.code == 1) {
+                x.notify(data.message, 'success');
+            } else {
+                x.notify(data.message, 'warning');
+            }
+        })
+    }
+
+    function ajax_edit_proxy() {
+        var pamars = {
+            netease_proxy_secret: x.getval('#netease_proxy_secret'),
+            netease_proxy_orderno: x.getval('#netease_proxy_orderno'),
+        };
+        x.ajax('/admin/ajax/set/config', pamars, function (data) {
+            if (data.code == 1) {
+                x.notify(data.message, 'success');
+            } else {
+                x.notify(data.message, 'warning');
+            }
+        })
+    }
+
+    function ajax_edit_netease_tool() {
+        var pamars = {
+            netease_tool_limit: x.getval('#netease_tool_limit', "请输入限制次数！"),
+        };
+        if (!pamars.netease_tool_limit) return;
+        if (!$.isNumeric(pamars.netease_tool_limit)) return x.notify("请输入正确的数字！", 'warning');
+        x.ajax('/admin/ajax/set/config', pamars, function (data) {
+            if (data.code == 1) {
+                x.notify(data.message, 'success');
+            } else {
+                x.notify(data.message, 'warning');
+            }
+        })
+    }
+
+    function ajax_edit_login_system() {
+        var pamars = {
+            login_system_key: x.getval('#login_system_key'),
+            login_system_iplimit: x.getval('#login_system_iplimit'),
+        };
+        x.ajax('/admin/ajax/set/config', pamars, function (data) {
+            if (data.code == 1) {
+                x.notify(data.message, 'success');
+            } else {
+                x.notify(data.message, 'warning');
+            }
+        })
+    }
+
+    function selChange(_this) {
+        var pamars = {
+            login_system_type: $(_this).prop("value")
+        };
+        x.ajax('/admin/ajax/set/config', pamars, function (data) {
+            if (data.code == 1) {
+                x.notify(data.message, 'success');
+            } else {
+                x.notify(data.message, 'warning');
+            }
+        })
+    }
+</script>
+{/block}

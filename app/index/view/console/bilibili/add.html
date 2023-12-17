@@ -1,0 +1,318 @@
+{extend name="common/layout"/}
+{block name="head"} {include file="console/head" /}{/block}
+{block name="main"}
+<div class="row">
+    <div class="col-md-6">
+        <div class="block block-rounded h-100 mb-0">
+            <div class="block-header block-header-default">
+                <h3 class="block-title">账号添加 （请使用B站账号登录）</h3>
+            </div>
+            <div class="block-content">
+<!--                <form onsubmit="return false;" id="login-form">-->
+<!--                    <div class="mb-4">-->
+<!--                        <label class="form-label" for="login-username">账号</label>-->
+<!--                        <div class="input-group">-->
+<!--                            <span class="input-group-text">-->
+<!--                              <i class="far fa-user"></i>-->
+<!--                            </span>-->
+<!--                            <input type="text" class="form-control" id="login-username" name="login-username" placeholder="请输入账号">-->
+<!--                        </div>-->
+<!--                    </div>-->
+<!--                    <div class="mb-4">-->
+<!--                        <label class="form-label" for="login-password">密码</label>-->
+<!--                        <div class="input-group">-->
+<!--                            <span class="input-group-text">-->
+<!--                              <i class="far fa-surprise"></i>-->
+<!--                            </span>-->
+<!--                            <input type="password" class="form-control" id="login-password" name="login-password" placeholder="请输入密码">-->
+<!--                        </div>-->
+<!--                    </div>-->
+
+<!--                    <div class="mb-4" id="captcha-container" style="display: none">-->
+<!--                        <label class="form-label" for="login-password">人机验证</label>-->
+<!--                        <div id="captcha">-->
+<!--                            <input type="hidden" id="login-key">-->
+<!--                        </div>-->
+<!--                    </div>-->
+
+<!--                    <div class="mb-4">-->
+<!--                        <button type="submit" class="btn btn-alt-primary" id="login">-->
+<!--                            <i class="fa fa-arrow-right opacity-50 me-1"></i> 登录-->
+<!--                        </button>-->
+<!--                    </div>-->
+<!--                </form>-->
+                <form onsubmit="return false;" id="slogin-form">
+                    <div class="mb-4">
+                        <label class="form-label" for="login-phone">手机号</label>
+                        <div class="input-group">
+                            <span class="input-group-text">
+                              <i class="far fa-user"></i>
+                            </span>
+                            <input type="text" class="form-control" id="login-phone" name="login-phone" placeholder="请输入手机号">
+                        </div>
+                    </div>
+
+                    <div class="input-group mb-4">
+                        <label class="form-label" for="login-code">短信验证码</label>
+                        <div class="input-group">
+                        <span class="input-group-text">
+                              <i class="far fa-surprise"></i>
+                            </span>
+                        <input type="number"class="form-control"id="login-code"name="login-code"placeholder="输入短信验证码">
+                        <button class="btn input-group-text"onclick="sendSms();"id="sendsms">获取验证码</button>
+                        </div>
+                    </div>
+
+                    <input type="hidden" id="captcha_key">
+                    <input type="hidden" id="recaptcha_token">
+
+                    <div class="mb-4">
+                        <button type="submit" class="btn btn-alt-primary" onclick="smsLogin();">
+                            <i class="fa fa-arrow-right opacity-50 me-1"></i> 登录
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="block block-rounded h-100 mb-0">
+            <div class="block-header block-header-default">
+                <h3 class="block-title">扫码添加</h3>
+                <div class="block-options">
+                    <button type="button" class="btn btn-sm btn-outline-primary" onclick="ajax_bilibili_qrlogin();">扫码完成，点击验证</button>
+                </div>
+            </div>
+            <div class="block-content text-center">
+                <div class="alert alert-primary d-flex align-items-center" role="alert">
+                    <i class="si si-magic-wand me-2"></i>
+                    <p class="mb-0" id="qr-alert">点击图片即可获取二维码</p>
+                </div>
+                <div class="block" id="qr-img" oauthKey="">
+                    <p class="mt-4">
+                        <i class="si si-camera fa-4x text-muted"></i>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{/block}
+{block name="foot"}
+<script>
+
+    function sendSms() {
+        var phone = x.getval('#login-phone', '请先输入手机号！');
+        if (!phone) return;
+        x.ajax('/index/ajax/bilibili/sendSms', {phone: phone}, function (data) {
+            if(data.code == 1) {
+                x.notify(data.message, 'success');
+                new InvokeSettime("#sendsms");
+                $('#captcha_key').val(data.data.captcha_key);
+            } else if (data.code == -1) {
+                initGeetest({
+                    gt: data.data.gee_gt,
+                    challenge: data.data.gee_challenge,
+                    offline: false, // 表示用户后台检测极验服务器是否宕机
+                    new_captcha: true, // 用于宕机时表示是新验证码的宕机
+                    product: "bind", // 产品形式，包括：float，popup
+                    // product: "popup", // 产品形式，包括：float，popup
+                    width: "auto",
+                    https: true
+                }, smsGeetestHandler);
+                $('#recaptcha_token').val(data.data.recaptcha_token);
+            } else {
+                x.notify(data.message, 'warning');
+            }
+        });
+    }
+    
+    let smsGeetestHandler = function (captchaObj) {
+        captchaObj.onReady(() => {
+            captchaObj.verify()
+        }).onSuccess(() => {
+            let result = captchaObj.getValidate();
+            let result_data = {
+                phone: x.getval('#login-phone'),
+                token: x.getval('#recaptcha_token'),
+                challenge: result.geetest_challenge,
+                validate: result.geetest_validate,
+                seccode: result.geetest_seccode,
+            };
+            x.ajax('/index/ajax/bilibili/sendSms', result_data, function (data) {
+                if(data.code == 1) {
+                    x.notify(data.message, 'success');
+                    new InvokeSettime("#sendsms");
+                    $('#captcha_key').val(data.data.captcha_key);
+                } else {
+                    x.notify(data.message, 'warning');
+                }
+            });
+        })
+    }
+
+    function smsLogin() {
+        var code = x.getval('#login-code', '请先输入短信验证码！');
+        if (!code) return;
+        x.ajax('/index/ajax/bilibili/smsLogin', {phone: x.getval('#login-phone', '请先输入手机号！'), captcha_key: x.getval('#captcha_key'), code: code}, function (data) {
+            if(data.code == 1) {
+                x.notify(data.message, 'success');
+                setTimeout(function () {
+                    window.location.href = "{:url(\"/index/console/bilibili/list\")}";
+                }, 1000)
+            } else {
+                x.notify(data.message, 'warning');
+            }
+        });
+    }
+
+    function InvokeSettime(obj){
+        var countdown=60;
+        settime(obj);
+        function settime(obj) {
+            if (countdown == 0) {
+                $(obj).attr("data-lock", "false");
+                $(obj).attr("disabled",false);
+                $(obj).text("获取验证码");
+                countdown = 60;
+                return;
+            } else {
+                $(obj).attr("data-lock", "true");
+                $(obj).attr("disabled",true);
+                $(obj).text("重新发送（" + countdown + "）");
+                countdown--;
+            }
+            setTimeout(function() {
+                    settime(obj) }
+                ,1000)
+        }
+    }
+
+
+    var handler = function (captchaObj) {
+        captchaObj.onReady(function () {}).onSuccess(function () {
+            var result = captchaObj.getValidate();
+            var username = x.getval('#login-username', '请先输入账号！');
+            var password = x.getval('#login-password', '请先输入密码！');
+            var key = x.getval('#login-key', '参数错误！');
+            if (!result) {
+                return x.notify('请先完成人机验证', 'warning');
+            }
+            var result_data ={
+                username: username,
+                password: password,
+                key: key,
+                geetest_challenge: result.geetest_challenge,
+                geetest_validate: result.geetest_validate,
+                geetest_seccode: result.geetest_seccode,
+            }
+            x.ajax('/index/ajax/bilibili/login', result_data, function (data) {
+                if(data.code == 1) {
+                    x.notify(data.message, 'success');
+                    setTimeout(function () {
+                        window.location.href = "{:url(\"/index/console/bilibili/list\")}";
+                    }, 1000)
+                } else if (data.code == 2) {
+                    initGeetest({
+                        gt: data.data.geetest.gee_gt,
+                        challenge: data.data.geetest.gee_challenge,
+                        offline: false, // 表示用户后台检测极验服务器是否宕机
+                        new_captcha: true, // 用于宕机时表示是新验证码的宕机
+                        product: "bind", // 产品形式，包括：float，popup
+                        width: "auto",
+                        https: true
+                    }, verifyPhoneHandler);
+                } else {
+                    captchaObj.destroy();getCaptcha();
+                    x.notify(data.message, 'warning');
+                }
+            });
+        });
+        $('#login').click(function () {
+            var username = x.getval('#login-username', '请先输入账号！');
+            if (!username) return;
+            var password = x.getval('#login-password', '请先输入密码！');
+            if (!password) return;
+            var key = x.getval('#login-key', '参数错误！');
+            if (!key) return;
+            captchaObj.verify();
+        });
+    };
+
+    let verifyPhoneHandler = function (captchaObj) {
+        captchaObj.onReady(() => {
+            captchaObj.verify()
+        }).onSuccess(() => {
+            let result = captchaObj.getValidate();
+            let result_data = {
+                phone: x.getval('#login-phone'),
+                token: x.getval('#token'),
+                challenge: result.geetest_challenge,
+                validate: result.geetest_validate,
+                seccode: result.geetest_seccode,
+            };
+            x.ajax('/index/ajax/bilibili/verifySendSms', result_data, function (data) {
+                if(data.code == 1) {
+                    x.notify(data.message, 'success');
+                    new InvokeSettime("#sendsms");
+                    $('#captcha_key').val(data.data.captcha_key);
+                } else {
+                    x.notify(data.message, 'warning');
+                }
+            });
+        })
+    }
+
+
+    const getCaptcha = () => {
+        x.ajax('/index/ajax/bilibili/geetest_captcha?t=' + (new Date()).getTime(), undefined , function (data) {
+            initGeetest({
+                gt: data.data.geetest.gt,
+                challenge: data.data.geetest.challenge,
+                offline: false, // 表示用户后台检测极验服务器是否宕机
+                new_captcha: true, // 用于宕机时表示是新验证码的宕机
+                product: "bind", // 产品形式，包括：float，popup
+                width: "auto",
+                https: true
+            }, handler);
+            $('#login-key').val(data.data.token);
+        })
+    };
+
+    $('#qr-img').click(function () {
+        x.ajax('/index/ajax/bilibili/getQrimg',null ,function (data) {
+            if (data.code == 1) {
+                $('#qr-img').attr('oauthKey', data.data.oauthKey);
+                $('#qr-img').html('<img src="data:image/png;base64,'+ data.data.qrimg +'" height="145px;">');
+            }
+        })
+        Codebase.block('state_normal', '#qr-img');
+    });
+
+    function ajax_bilibili_qrlogin() {
+        var oauthKey = $('#qr-img').attr('oauthKey');
+        if (!oauthKey) return x.notify('请先获取二维码');
+        x.ajax('/index/ajax/bilibili/qrLogin', {
+            oauthKey: oauthKey,
+        }, function (data) {
+            if(data.code == 1) {
+                x.notify(data.message, 'success');
+                setTimeout(function () {
+                    window.location.href = "{:url(\"/index/console/bilibili/list\")}";
+                }, 1000)
+            } else if (data.code == 800) {
+                $('#qr-img').click();
+            } else {
+                x.notify(data.message, 'warning')
+                $('#qr-alert').html(data.message);
+            }
+        })
+    }
+
+    $(function(){
+        Codebase.block('state_loading', '#qr-img');
+        // getCaptcha();
+    });
+</script>
+{/block}
+

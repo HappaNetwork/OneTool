@@ -1,0 +1,149 @@
+{extend name="common/layout"/}
+{block name="head"} {include file="system/head" /}{/block}
+{block name="main"}
+<div class="block block-rounded">
+    <div class="block-header block-header-default">
+        <h3 class="block-title">{$webTitle}</h3>
+        <div class="mb-0">
+            <button type="submit" class="btn btn-sm btn-alt-primary" onclick="ajax_edit_config();">
+                <i class="fa fa-save opacity-50 me-1"></i> 保存
+            </button>
+        </div>
+    </div>
+    <div class="block-content">
+        <form onsubmit="return false;" id="dg-form">
+            <div class="row push">
+                <div class="col-lg-4">
+                    <h2 class="content-heading pt-0 text-primary">全套价格设置 <small class="fs-sm">单位:元</small></h2>
+                    <div class="mb-4">
+                        <label class="form-label" for="all_price_1">一个月：</label>
+                        <input type="text" class="form-control" id="all_price_1" name="dg_all_price_1" value="{:config('sys.dg_all_price_1')}" placeholder="...">
+                    </div>
+                    <div class="mb-4">
+                        <label class="form-label" for="all_price_3">三个月：</label>
+                        <input type="text" class="form-control" id="all_price_3" name="dg_all_price_3" value="{:config('sys.dg_all_price_3')}" placeholder="...">
+                    </div>
+                    <div class="mb-4">
+                        <label class="form-label" for="all_price_6">六个月：</label>
+                        <input type="text" class="form-control" id="all_price_6" name="dg_all_price_6" value="{:config('sys.dg_all_price_6')}" placeholder="...">
+                    </div>
+                    <div class="mb-4">
+                        <label class="form-label" for="all_price_12">十二个月：</label>
+                        <input type="text" class="form-control" id="all_price_12" name="dg_all_price_12" value="{:config('sys.dg_all_price_12')}" placeholder="...">
+                    </div>
+                    <div class="mb-4">
+                        <label class="form-label" for="all_price_999">永久：</label>
+                        <input type="text" class="form-control" id="all_price_999" name="dg_all_price_999" value="{:config('sys.dg_all_price_999')}" placeholder="...">
+                    </div>
+                </div>
+                <div class="col-lg-4">
+                    <h2 class="content-heading pt-0 text-primary">加速价格设置 <small class="fs-sm">单位:元</small></h2>
+                    <div class="mb-4">
+                        <label class="form-label" for="player_price_1">一个月：</label>
+                        <input type="text" class="form-control" id="player_price_1" name="dg_player_price_1" value="{:config('sys.dg_player_price_1')}" placeholder="...">
+                    </div>
+                    <div class="mb-4">
+                        <label class="form-label" for="player_price_3">三个月：</label>
+                        <input type="text" class="form-control" id="player_price_3" name="dg_player_price_3" value="{:config('sys.dg_player_price_3')}" placeholder="...">
+                    </div>
+                    <div class="mb-4">
+                        <label class="form-label" for="player_price_6">六个月：</label>
+                        <input type="text" class="form-control" id="player_price_6" name="dg_player_price_6" value="{:config('sys.dg_player_price_6')}" placeholder="...">
+                    </div>
+                    <div class="mb-4">
+                        <label class="form-label" for="player_price_12">十二个月：</label>
+                        <input type="text" class="form-control" id="player_price_12" name="dg_player_price_12" value="{:config('sys.dg_player_price_12')}" placeholder="...">
+                    </div>
+                    <div class="mb-4">
+                        <label class="form-label" for="player_price_999">永久：</label>
+                        <input type="text" class="form-control" id="player_price_999" name="dg_player_price_999" value="{:config('sys.dg_player_price_999')}" placeholder="...">
+                    </div>
+                </div>
+                <div class="col-lg-4">
+                    <h2 class="content-heading pt-0 text-primary">拓展价格设置 <small class="fs-sm">单位:元</small></h2>
+                    <div class="mb-4">
+                        <label class="form-label" for="sign_price_1">一个月：</label>
+                        <input type="text" class="form-control" id="sign_price_1" name="dg_sign_price_1" value="{:config('sys.dg_sign_price_1')}" placeholder="...">
+                    </div>
+                    <div class="mb-4">
+                        <label class="form-label" for="sign_price_3">三个月：</label>
+                        <input type="text" class="form-control" id="sign_price_3" name="dg_sign_price_3" value="{:config('sys.dg_sign_price_3')}" placeholder="...">
+                    </div>
+                    <div class="mb-4">
+                        <label class="form-label" for="sign_price_6">六个月：</label>
+                        <input type="text" class="form-control" id="sign_price_6" name="dg_sign_price_6" value="{:config('sys.dg_sign_price_6')}" placeholder="...">
+                    </div>
+                    <div class="mb-4">
+                        <label class="form-label" for="sign_price_12">十二个月：</label>
+                        <input type="text" class="form-control" id="sign_price_12" name="dg_sign_price_12" value="{:config('sys.dg_sign_price_12')}" placeholder="...">
+                    </div>
+                    <div class="mb-4">
+                        <label class="form-label" for="sign_price_999">永久：</label>
+                        <input type="text" class="form-control" id="sign_price_999" name="dg_sign_price_999" value="{:config('sys.dg_sign_price_999')}" placeholder="...">
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+<div class="block block-rounded">
+    <div class="block-header block-header-default">
+        <h3 class="block-title">等级代练成本</h3>
+    </div>
+    <div class="block-content table-responsive">
+        {if $price}
+        <table class="table table-bordered">
+            <thead>
+            <tr>
+                <th>全套</th>
+                <th>加速</th>
+                <th>拓展</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr>
+                <td class="text-success">月: {:$price['all']['month']}￥</td>
+                <td class="text-success">月: {:$price['player']['month']}￥</td>
+                <td class="text-success">月: {:$price['sign']['month']}￥</td>
+            </tr>
+            <tr>
+                <td class="text-warning">季: {:$price['all']['quarter']}￥</td>
+                <td class="text-warning">季: {:$price['player']['quarter']}￥</td>
+                <td class="text-warning">季: {:$price['sign']['quarter']}￥</td>
+            </tr>
+            <tr>
+                <td class="text-primary">半年: {:$price['all']['half']}￥</td>
+                <td class="text-primary">半年: {:$price['player']['half']}￥</td>
+                <td class="text-primary">半年: {:$price['sign']['half']}￥</td>
+            </tr>
+            <tr>
+                <td class="text-danger">年: {:$price['all']['year']}￥</td>
+                <td class="text-danger">年: {:$price['player']['year']}￥</td>
+                <td class="text-danger">年: {:$price['sign']['year']}￥</td>
+            </tr>
+            <tr>
+                <td style="color: #d3adf7;">永久: {:$price['all']['forever']}￥</td>
+                <td style="color: #d3adf7;">永久: {:$price['player']['forever']}￥</td>
+                <td style="color: #d3adf7;">永久: {:$price['sign']['forever']}￥</td>
+            </tr>
+            </tbody>
+        </table>
+        {else /}
+        <p class="fw-semibold text-danger">系统配置有误</p>
+        {/if}
+    </div>
+</div>
+{/block}
+{block name="foot"}
+<script>
+    function ajax_edit_config() {
+        x.ajax('/admin/ajax/set/config', $('#dg-form').serialize(), function (data) {
+            if (data.code == 1) {
+                x.notify(data.message, 'success');
+            } else {
+                x.notify(data.message, 'warning');
+            }
+        })
+    }
+</script>
+{/block}
